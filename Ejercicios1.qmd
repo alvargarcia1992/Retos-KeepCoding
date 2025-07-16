@@ -1,0 +1,169 @@
+---
+title: "Ejercicios1"
+format: html
+editor: visual
+---
+
+## Peso al nacer
+
+Leer el dataset que se encuentra en data/birthweight_reduced.csv.
+
+```{r}
+bwt <- read.csv("./data/birthweight_reduced.csv", col.names = c("id","headcircumference", "length", "Birthweight", "Gestation", "smoker", ))
+head(bwt)
+view(bwt)
+
+```
+
+Convertir la columna smoker en un factor con los valores: 1- 'YES' 0- 'NO'
+
+```{r}
+bwt$smoker <- factor(bwt$smoker,labels= c("NO", "YES"))
+head(bwt)
+```
+
+Para la columna Birthweight:
+
+1- Calcular media, mediana y los cuartiles
+
+```{r}
+bwt_mean_Birthweight <- mean(bwt$Birthweight)
+bwt_mean_Birthweight
+bwt_median_Birthweight <- median(bwt$Birthweight)
+bwt_median_Birthweight
+bwt_quartiles_Birthweight <- quantile(bwt$Birthweight, probs = c(0.25,0.5,0.75))
+bwt_quartiles_Birthweight
+
+
+```
+
+2- Dibujar un Boxplot. Y decir cuales son los outliers, y ver si veis alguna caracteristica importante.
+
+```{r}
+X <-bwt$Birthweight
+boxplot(X)
+grid()
+q1<-quantile(X,0.25)
+q3<-quantile(X,0.75)
+iqr<-q3-q1
+names(iqr)<-"iqr"
+q1
+q3
+iqr
+
+text(1.25,q3,"Q3")
+text(1.29,median(X),"mediana")
+text(1.25,q1,"Q1")
+text(1.25,q3 + 1.5*iqr, "Q1 + q.5*IQR")
+text(1.25,q3 - 1.5*iqr, "Q1 - q.5*IQR")
+text(0.9,q3 + 1.8 * iqr, "Outlayers")
+
+
+# Parece que no hay outliers
+```
+
+3-¿Cuantas madres fumadoras y no fumadoras hay?
+
+```{r}
+counts<-table(bwt$smoker)
+counts
+```
+
+4- ¿Cual es el peso medio de los niños al nacer para las madres fumadoras y no fumadoras?
+
+```{r}
+tapply(bwt$Birthweight,bwt$smoker,mean)
+
+```
+
+5- ¿Cual de los dos grupos presenta una varianza mayor?
+
+```{r}
+tapply(bwt$Birthweight,bwt$smoker,var)
+# La varianza es mayor en el grupo de maddres fumadoras
+
+```
+
+6- Pinta un Boxplot del peso para cada uno de los grupos
+
+```{r}
+boxplot(bwt$Birthweight ~ bwt$smoker,
+        data = bwt,
+        main = "Pesos de nacimiento por madres fumadoras y no fumadoras",
+        xlab = "Fumadoras",
+        ylab = "Pesos")
+```
+
+## Ciudades soleadas
+
+Vamos a leer el dataset cities_sunny. Muestra las horas de sol medias que tienen diferentes ciudades en un mes determinado.
+
+```{r}
+df_sunny <- read.csv("./data/cities_sunny.csv")
+head(df_sunny)
+```
+
+1- ¿Cuantos paises hay? ¿Cuantas Ciudades?
+
+```{r}
+no_countries<-length(unique(df_sunny$Country))
+no_cities<-length(unique(df_sunny$City))
+no_countries
+no_cities
+```
+
+Numero de ciudades por pais. Hay tantas filas como paises:
+
+```{r}
+library(dplyr)
+
+df_sunny %>%
+  group_by(Country) %>%
+  summarise(num_cities = n_distinct(City)) %>%
+  arrange(desc(num_cities))
+
+```
+
+Numero de ciudades:
+
+```{r}# 378}
+
+```
+
+2- ¿Cual es la ciudad que más horas de sol tiene en enero?
+
+```{r}
+df_sunny$City[which.max(df_sunny$Jan)]
+```
+
+3- ¿Cual es la ciudad que más horas de sol totales tiene en los meses de Enero, Febrero y Marzo? (suma los 3 meses y encuentra la ciudad con el máximo)
+
+```{r}
+df_sunny$City[which.max(df_sunny$Jan+df_sunny$Feb+df_sunny$Mar)]
+
+```
+
+4- ¿Cual es la ciudad que más horas de sol tiene en todo el año? (sumando todos los meses)
+
+```{r}
+df_sunny$City[which.max(df_sunny$Jan + df_sunny$Feb + df_sunny$Mar + df_sunny$Apr + df_sunny$May + df_sunny$Jun + df_sunny$Jul + df_sunny$Aug + df_sunny$Sep + df_sunny$Oct + df_sunny$Nov + df_sunny$Dec)]
+```
+
+5- En el dataset, ¿cual es el país que tiene más ciudades?. Muestra el número medio de horas mensuales en enero para las ciudades de ese país.
+
+```{r}
+num_cities = n_distinct(df_sunny$City)
+which.max(num_cities)
+
+```
+
+6- ¿Cual es el número medio de horas soleadas al mes en Madrid? ¿y su mediana?
+
+```{r}
+madrid_row <- df_sunny[df_sunny$City == "Madrid",]
+madrid_row
+madrid_mean_temp <- rowMeans(madrid_row[c("Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                                   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")],na.rm = TRUE)
+madrid_mean_temp
+# la temperatura media es 230.5
+```
